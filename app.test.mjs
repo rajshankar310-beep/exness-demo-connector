@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {generateKeyPairSync,verify} from 'node:crypto';
+import {generateKeyPairSync,verify,createPrivateKey,createPublicKey} from 'node:crypto';
+import {generatePair} from './keygen.mjs';
 import {headers,configuration,check,server} from './app.mjs';
 test('missing enable flag makes no requests',async()=>{
  assert.deepEqual(await check({},()=>{throw Error('must not call')}),{status:'waiting_for_credentials'});
@@ -30,5 +31,19 @@ test('public health reveals no credentials and rejects writes',async()=>{
  assert.deepEqual(await (await fetch(url+'/healthz')).json(),
  {service:'exness-demo-connector',status:'running',trading_enabled:false});
  assert.equal((await fetch(url,{method:'POST'})).status,404);
+ const setup=await fetch(url+'/setup');
+ assert.equal(setup.status,200);
+ assert.match(setup.headers.get('content-security-policy'),/connect-src 'none'/);
+ assert.match(await setup.text(),/Copy private key/);
+ assert.equal((await fetch(url+'/keygen.mjs')).status,200);
+ assert.equal((await fetch(url+'/signing.pem')).status,404);
  } finally {await new Promise(r=>app.close(r));}
+});
+test('browser generated PKCS8 and SPKI keys work with connector signer',async()=>{
+ const first=await generatePair();const second=await generatePair();
+ assert.notEqual(first.publicKey,second.publicKey);
+ const privateKey=createPrivateKey(first.privateKey);
+ const publicKey=createPublicKey({key:Buffer.from(first.publicKey,'base64'),format:'der',type:'spki'});
+ const h=headers('test',privateKey,'/account',123);
+ assert.equal(verify(null,Buffer.from(h['EXN-DATA'],'base64url'),publicKey,Buffer.from(h['EXN-SIGN'],'base64url')),true);
 });
