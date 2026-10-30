@@ -41,6 +41,16 @@ export async function check(env, request=fetch) {
 }
 export function server() {
   return http.createServer((req,res)=>{
+    const pages={'/setup':['setup.html','text/html; charset=utf-8'],
+      '/keygen.mjs':['keygen.mjs','text/javascript; charset=utf-8']};
+    if (req.method==='GET' && Object.hasOwn(pages,req.url)) {
+      const [file,type]=pages[req.url];
+      res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store',
+        'Content-Security-Policy':"default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        'Referrer-Policy':'no-referrer','X-Content-Type-Options':'nosniff'});
+      res.end(readFileSync(new URL(file,import.meta.url)));
+      return;
+    }
     const ok=req.method==='GET' && ['/', '/healthz'].includes(req.url);
     res.writeHead(ok?200:404,{'Content-Type':'application/json','Cache-Control':'no-store',
       'X-Content-Type-Options':'nosniff'});
