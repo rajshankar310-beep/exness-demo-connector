@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demo connection key setup</title>
+<style>body{font:17px/1.6 system-ui,sans-serif;background:#f5f7fa;color:#182333;margin:0;padding:24px}main{max-width:620px;margin:auto}h1{font-size:28px}section{background:white;padding:22px;border-radius:14px;margin:20px 0}button{font:inherit;padding:13px 18px;border:0;border-radius:8px;background:#174fa5;color:white;margin:6px 6px 6px 0;cursor:pointer}button:disabled{opacity:.5}textarea{box-sizing:border-box;width:100%;padding:12px;font:15px monospace;resize:vertical}code{overflow-wrap:anywhere}#message{background:#e3edff;padding:12px;border-radius:8px}[hidden]{display:none}</style>
+<main><h1>Set up your demo connection</h1>
+<p>This page generates a matching public and private key on your device. It does not upload keys, use analytics, or save them in browser storage.</p>
+<p>Keep this tab open until both keys are saved. Reloading loses this pair. Never send the private key in chat or screenshots.</p>
+<button id="generate">Generate key pair</button>
+<p id="message" role="status" aria-live="polite">Ready. No keys generated yet.</p>
+<div id="results" hidden>
+<section><h2>1. Save the private key in Render</h2>
+<p>Open your Render service in another tab. Under <b>Environment → Secret Files → Add file</b>, name the file <code>signing.pem</code>. Copy the private key below and paste it into the file contents, then save.</p>
+<button id="copyPrivate">Copy private key</button><button id="download">Download signing.pem</button>
+<p>The private key is deliberately not displayed. Keep a secure backup. Leave <code>EXN_ENABLED</code> as <code>false</code>.</p></section>
+<section><h2>2. Register the public key in Exness</h2>
+<p>Create a new API key with <b>Trading → Read-only</b> for your demo account only. Choose <b>I'll use my own public key</b> and paste this value:</p>
+<label for="public">Public key (safe to share)</label><textarea id="public" readonly rows="3"></textarea>
+<button id="copyPublic">Copy public key</button></section>
+<section><h2>3. Save the new API key in Render</h2>
+<p>Set <code>EXN_API_KEY</code> to the API key Exness issues for this public key. This replaces any previous API key value. Keep <code>EXN_ENABLED=false</code> until configuration is checked.</p>
+<p>This completes credential setup only. It does not enable trading.</p></section></div></main>
+<script type="module" src="/keygen.mjs"></script></html>
